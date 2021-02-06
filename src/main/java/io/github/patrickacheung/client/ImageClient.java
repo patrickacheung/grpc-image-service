@@ -91,7 +91,7 @@ public class ImageClient {
             .build();
             
             try {
-                ImageClient imageClient = new ImageClient(channel);
+                ImageClient imageClient = new ImageClient(channel); // TODO: make an IMAGECLIENTBUILDER
                 imageClient.greet(user);    
             } finally {
                 // ManagedChannels use resources like threads and TCP connections. To prevent leaking these

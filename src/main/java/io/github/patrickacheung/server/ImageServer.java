@@ -19,9 +19,9 @@ public class ImageServer {
     private static final Logger log = LogManager.getLogger(ImageServer.class.getName());
 
     private Server server;
+    private int port = 8080; // default port
 
     private void start() throws IOException {
-        int port = 8080;
         server = ServerBuilder.forPort(port).addService(new GreeterServiceImpl()).addService(new ImageServiceImpl()).build().start(); // TODO investigate .intercept() - can intercept calls (perhaps logging?) //ServerTransportFilter vs ServerInterceptor
         log.info ("Server started, listening on " + port);
 
@@ -51,8 +51,12 @@ public class ImageServer {
         }
     }
 
+    public void setPort(int port) {
+        this.port = port;
+    }
+
     public static void main(String[] args) throws IOException, InterruptedException {
-        final ImageServer server = new ImageServer();
+        final ImageServer server = new ImageServer(); // TODO: make a IMAGESERVERBUILDER
         server.start();
         server.blockUntilShutdown();
     }
