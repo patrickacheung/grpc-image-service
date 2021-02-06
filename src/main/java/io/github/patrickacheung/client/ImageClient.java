@@ -2,6 +2,7 @@ package io.github.patrickacheung.client;
 
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.cli.Options;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -48,6 +49,9 @@ public class ImageClient {
     public static void main(String[] args) throws InterruptedException {
         String user = "user";
         String target = "localhost:8080";
+
+        Options options = new Options();
+        
 
         // Create a communication channel to the server, known as a Channel. Channels are thread-safe
         // and reusable. It is common to create channels at the beginning of your application and reuse

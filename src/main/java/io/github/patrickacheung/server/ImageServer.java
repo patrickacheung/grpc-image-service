@@ -22,7 +22,7 @@ public class ImageServer {
 
     private void start() throws IOException {
         int port = 8080;
-        server = ServerBuilder.forPort(port).addService(new GreeterServiceImpl()).build().start(); // TODO investigate .intercept() - can intercept calls (perhaps logging?) //ServerTransportFilter vs ServerInterceptor
+        server = ServerBuilder.forPort(port).addService(new GreeterServiceImpl()).addService(new ImageServiceImpl()).build().start(); // TODO investigate .intercept() - can intercept calls (perhaps logging?) //ServerTransportFilter vs ServerInterceptor
         log.info ("Server started, listening on " + port);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
