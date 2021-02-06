@@ -32,10 +32,10 @@ public class ImageClient {
 
     /** Construct client for accessing ImageServer server using the existing channel. */
     public ImageClient(Channel channel) {
-    // 'channel' here is a Channel, not a ManagedChannel, so it is not this code's responsibility to
-    // shut it down.
+        // 'channel' here is a Channel, not a ManagedChannel, so it is not this code's responsibility to
+        // shut it down.
 
-    // Passing Channels to code makes code easier to test and makes it easier to reuse Channels.
+        // Passing Channels to code makes code easier to test and makes it easier to reuse Channels.
         this.blockingStub = GreeterServiceGrpc.newBlockingStub(channel);
     }
 
@@ -55,13 +55,18 @@ public class ImageClient {
 
     public static void main(String[] args) throws InterruptedException {
         String user = "user";
-        String target = "localhost:8080";
+        String defaultHost = "localhost";
+        int defaultPort = 8080;
 
         Options options = new Options();
         Option imageFile = new Option("i", "image", true, "image file path");
         Option rotate = new Option("r", "rotation", true, "0, 90, 180, 270");
+        Option host = new Option("h", "host", true, "the host");
+        Option port = new Option("p", "port", true, "the port");
         options.addOption(imageFile);
         options.addOption(rotate);
+        options.addOption(host);
+        options.addOption(port);
 
         CommandLineParser parser = new DefaultParser();
         try {
@@ -69,11 +74,17 @@ public class ImageClient {
             if (!line.hasOption("i") && !line.hasOption("r")) {
                 throw new MissingOptionException(Arrays.asList(imageFile, rotate));
             }
+            if (line.hasOption("h")) {
+                defaultHost = line.getOptionValue("h");
+            }
+            if (line.hasOption("p")) {
+                defaultPort = Integer.parseInt(line.getOptionValue("p"));
+            }
 
             // Create a communication channel to the server, known as a Channel. Channels are thread-safe
             // and reusable. It is common to create channels at the beginning of your application and reuse
             // them until the application shuts down.
-            ManagedChannel channel = ManagedChannelBuilder.forTarget(target)
+            ManagedChannel channel = ManagedChannelBuilder.forAddress(defaultHost, defaultPort)
             // Channels are secure by default (via SSL/TLS). For the example we disable TLS to avoid
             // needing certificates.
             .usePlaintext()
@@ -90,6 +101,8 @@ public class ImageClient {
             }
         } catch (ParseException e) {
             log.error("Failed to parse command line args. Reason: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            log.error(options.getOption("p").getLongOpt() + " arg provided is not an integer");
         }
     }
 }
