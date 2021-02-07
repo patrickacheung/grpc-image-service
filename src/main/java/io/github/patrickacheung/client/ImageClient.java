@@ -13,9 +13,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import io.github.patrickacheung.GreeterServiceGrpc;
-import io.github.patrickacheung.HelloReply;
-import io.github.patrickacheung.HelloRequest;
+import io.github.patrickacheung.NLImageServiceGrpc;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -28,7 +26,7 @@ import io.grpc.StatusRuntimeException;
 public class ImageClient {
     private static final Logger log = LogManager.getLogger(ImageClient.class.getName());
 
-    private final GreeterServiceGrpc.GreeterServiceBlockingStub blockingStub;
+    private final NLImageServiceGrpc.NLImageServiceBlockingStub blockingStub;
 
     /** Construct client for accessing ImageServer server using the existing channel. */
     public ImageClient(Channel channel) {
@@ -36,25 +34,10 @@ public class ImageClient {
         // shut it down.
 
         // Passing Channels to code makes code easier to test and makes it easier to reuse Channels.
-        this.blockingStub = GreeterServiceGrpc.newBlockingStub(channel);
-    }
-
-    private void greet(String user) {
-        log.info("Will try to greet " + user + " ...");
-        HelloRequest req = HelloRequest.newBuilder().setName(user).build();
-        HelloReply response;
-        try {
-            response = blockingStub.sayHello(req);
-        } catch (StatusRuntimeException e) {
-            log.warn("RPC failed: {0}", e.getStatus());
-            return;
-        }
-
-        log.info("Greeting: " + response.getMessage());
+        this.blockingStub = NLImageServiceGrpc.newBlockingStub(channel);
     }
 
     public static void main(String[] args) throws InterruptedException {
-        String user = "user";
         String defaultHost = "localhost";
         int defaultPort = 8080;
 
@@ -92,7 +75,6 @@ public class ImageClient {
             
             try {
                 ImageClient imageClient = new ImageClient(channel); // TODO: make an IMAGECLIENTBUILDER
-                imageClient.greet(user);    
             } finally {
                 // ManagedChannels use resources like threads and TCP connections. To prevent leaking these
                 // resources the channel should be shut down when it will no longer be used. If it may be used

@@ -6,7 +6,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import io.github.patrickacheung.service.GreeterServiceImpl;
 import io.github.patrickacheung.service.ImageServiceImpl;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -22,7 +21,7 @@ public class ImageServer {
     private int port = 8080; // default port
 
     private void start() throws IOException {
-        server = ServerBuilder.forPort(port).addService(new GreeterServiceImpl()).addService(new ImageServiceImpl()).build().start(); // TODO investigate .intercept() - can intercept calls (perhaps logging?) //ServerTransportFilter vs ServerInterceptor
+        server = ServerBuilder.forPort(port).addService(new ImageServiceImpl()).build().start(); // TODO investigate .intercept() - can intercept calls (perhaps logging?) //ServerTransportFilter vs ServerInterceptor
         log.info ("Server started, listening on " + port);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
