@@ -45,12 +45,15 @@ public class ImageClient {
         this.blockingStub = NLImageServiceGrpc.newBlockingStub(channel);
     }
 
-    public void rotateImage(NLImage imageProto, NLImageRotateRequest.Rotation rotation) {
-
-    }
-
-    private static NLImageRotateRequest generateRotationRequest(BufferedImage image, String rotation) { // TODO: not a static
-        return null;
+    public NLImage rotateImage(NLImageRotateRequest request) {
+        NLImage reply;
+        try {
+            reply = blockingStub.rotateImage(request);
+        } catch (StatusRuntimeException e) {
+            log.error("RPC failed: {0}", e.getStatus());
+            reply = null;
+        }
+        return reply;
     }
 
     public static void main(String[] args) throws InterruptedException {
@@ -87,8 +90,7 @@ public class ImageClient {
 
             Path imageFilePath = Paths.get(line.getOptionValue("i"));
             BufferedImage image = ImageIO.read(imageFilePath.toFile());
-            String rotation = line.getOptionValue("r");
-            ImageClientUtils.validateCliRotationOptions(rotation);
+            NLImageRotateRequest.Rotation rotation = ImageClientUtils.getRotation(line.getOptionValue("r"));
             NLImageRotateRequest rotateRequestProto = ImageClientUtils.generateRequestProto(image, rotation);
             
             // Create a communication channel to the server, known as a Channel. Channels are thread-safe
@@ -102,7 +104,7 @@ public class ImageClient {
             
             try {
                 ImageClient imageClient = new ImageClient(channel); // TODO: make an IMAGECLIENTBUILDER
-                //imageClient.rotateImage(imageProto, rotation);
+                NLImage replyProto = imageClient.rotateImage(rotateRequestProto);
             } finally {
                 // ManagedChannels use resources like threads and TCP connections. To prevent leaking these
                 // resources the channel should be shut down when it will no longer be used. If it may be used
