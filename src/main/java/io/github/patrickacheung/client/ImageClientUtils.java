@@ -7,8 +7,14 @@ import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Iterator;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 
 import io.github.patrickacheung.NLImage;
 import io.github.patrickacheung.NLImageRotateRequest;
@@ -38,15 +44,15 @@ public class ImageClientUtils {
         return validRotationsToEnum.get(rotationNum);
     }
 
-    public static NLImageRotateRequest generateRequestProto(BufferedImage image, 
+    public static NLImageRotateRequest generateRequestProto(Image image, 
             NLImageRotateRequest.Rotation rotation) throws IOException {
 
         NLImage.Builder imageBuilder = NLImage.newBuilder();
-        imageBuilder.setColor(image.getColorModel().getColorSpace().getType() == ColorSpace.TYPE_GRAY);
-        imageBuilder.setWidth(image.getWidth());
-        imageBuilder.setHeight(image.getHeight());
+        imageBuilder.setColor(image.getBufferedImage().getColorModel().getColorSpace().getType() == ColorSpace.TYPE_GRAY);
+        imageBuilder.setWidth(image.getBufferedImage().getWidth());
+        imageBuilder.setHeight(image.getBufferedImage().getHeight());
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            ImageIO.write(image, "png", bos); // TODO: wrapper class to store image type
+            ImageIO.write(image.getBufferedImage(), image.getFormat(), bos);
             imageBuilder.setData(ByteString.copyFrom(bos.toByteArray()));
         }
         NLImage imageProto = imageBuilder.build();
@@ -58,7 +64,47 @@ public class ImageClientUtils {
         return requestBuilder.build();
     }
 
+    public static Image parseImage(Path imageFilePath) throws IOException {
+        String format = null;
+        BufferedImage bufferedImage = null;
+
+        try (InputStream is = Files.newInputStream(imageFilePath);
+             ImageInputStream iis = ImageIO.createImageInputStream(is)) {
+
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
+            if (readers.hasNext()) {
+                ImageReader reader = readers.next();
+                format = reader.getFormatName();
+                reader.setInput(iis);
+                bufferedImage = reader.read(0);
+            } else {
+                throw new IOException("Unable to parse image! Invalid format!");
+            }
+        }
+
+        return new Image(bufferedImage, format);
+    }
+
     private ImageClientUtils() {
         // private constructor
+    }
+
+    /** Wrapper class to hold image format */
+    static class Image {
+        private String format;
+        private BufferedImage bufferedImage;
+
+        private Image(BufferedImage bufferedImage, String format) {
+            this.bufferedImage = bufferedImage;
+            this.format = format;
+        }
+
+        BufferedImage getBufferedImage() {
+            return bufferedImage;
+        }
+
+        String getFormat() {
+            return format;
+        }
     }
 }

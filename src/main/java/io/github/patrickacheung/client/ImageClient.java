@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 import io.github.patrickacheung.NLImage;
 import io.github.patrickacheung.NLImageRotateRequest;
 import io.github.patrickacheung.NLImageServiceGrpc;
+import io.github.patrickacheung.client.ImageClientUtils.Image;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -89,7 +90,7 @@ public class ImageClient {
             }
 
             Path imageFilePath = Paths.get(line.getOptionValue("i"));
-            BufferedImage image = ImageIO.read(imageFilePath.toFile());
+            Image image = ImageClientUtils.parseImage(imageFilePath);
             NLImageRotateRequest.Rotation rotation = ImageClientUtils.getRotation(line.getOptionValue("r"));
             NLImageRotateRequest rotateRequestProto = ImageClientUtils.generateRequestProto(image, rotation);
             
@@ -116,7 +117,7 @@ public class ImageClient {
         } catch (NumberFormatException e) {
             log.error(options.getOption("p").getLongOpt() + " arg provided is not an integer");
         } catch (IOException e) {
-            log.error("Failed to read image file. Reason: " + e.getMessage());
+            log.error("Failed to read image file. Reason: " + e);
         } catch (IllegalArgumentException e) {
             log.error("Invalid argument. Reason: " + e.getMessage());
         }
