@@ -1,7 +1,13 @@
 package io.github.patrickacheung.client;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+
+import javax.imageio.ImageIO;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -13,6 +19,8 @@ import org.apache.commons.cli.ParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import io.github.patrickacheung.NLImage;
+import io.github.patrickacheung.NLImageRotateRequest;
 import io.github.patrickacheung.NLImageServiceGrpc;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
@@ -37,6 +45,14 @@ public class ImageClient {
         this.blockingStub = NLImageServiceGrpc.newBlockingStub(channel);
     }
 
+    public void rotateImage(NLImage imageProto, NLImageRotateRequest.Rotation rotation) {
+
+    }
+
+    private static NLImageRotateRequest generateRotationRequest(BufferedImage image, String rotation) { // TODO: not a static
+        return null;
+    }
+
     public static void main(String[] args) throws InterruptedException {
         String defaultHost = "localhost";
         int defaultPort = 8080;
@@ -56,7 +72,12 @@ public class ImageClient {
             CommandLine line = parser.parse(options, args);
             if (!line.hasOption("i") && !line.hasOption("r")) {
                 throw new MissingOptionException(Arrays.asList(imageFile, rotate));
+            } else if (!line.hasOption("i")) {
+                throw new MissingOptionException(Arrays.asList(imageFile));
+            } else if (!line.hasOption("r")) {
+                throw new MissingOptionException(Arrays.asList(rotate));
             }
+
             if (line.hasOption("h")) {
                 defaultHost = line.getOptionValue("h");
             }
@@ -64,6 +85,12 @@ public class ImageClient {
                 defaultPort = Integer.parseInt(line.getOptionValue("p"));
             }
 
+            Path imageFilePath = Paths.get(line.getOptionValue("i"));
+            BufferedImage image = ImageIO.read(imageFilePath.toFile());
+            String rotation = line.getOptionValue("r");
+            ImageClientUtils.validateCliRotationOptions(rotation);
+            NLImageRotateRequest rotateRequestProto = ImageClientUtils.generateRequestProto(image, rotation);
+            
             // Create a communication channel to the server, known as a Channel. Channels are thread-safe
             // and reusable. It is common to create channels at the beginning of your application and reuse
             // them until the application shuts down.
@@ -75,6 +102,7 @@ public class ImageClient {
             
             try {
                 ImageClient imageClient = new ImageClient(channel); // TODO: make an IMAGECLIENTBUILDER
+                //imageClient.rotateImage(imageProto, rotation);
             } finally {
                 // ManagedChannels use resources like threads and TCP connections. To prevent leaking these
                 // resources the channel should be shut down when it will no longer be used. If it may be used
@@ -85,6 +113,10 @@ public class ImageClient {
             log.error("Failed to parse command line args. Reason: " + e.getMessage());
         } catch (NumberFormatException e) {
             log.error(options.getOption("p").getLongOpt() + " arg provided is not an integer");
+        } catch (IOException e) {
+            log.error("Failed to read image file. Reason: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid argument. Reason: " + e.getMessage());
         }
     }
 }
