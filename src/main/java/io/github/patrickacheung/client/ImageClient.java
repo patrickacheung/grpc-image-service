@@ -51,7 +51,7 @@ public class ImageClient {
         try {
             reply = blockingStub.rotateImage(request);
         } catch (StatusRuntimeException e) {
-            log.error("RPC failed: {0}", e.getStatus());
+            log.error("RPC failed: " + e.getStatus().getCause().getMessage());
             reply = null;
         }
         return reply;
