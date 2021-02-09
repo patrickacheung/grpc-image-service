@@ -106,6 +106,7 @@ public class ImageClient {
             try {
                 ImageClient imageClient = new ImageClient(channel); // TODO: make an IMAGECLIENTBUILDER
                 NLImage replyProto = imageClient.rotateImage(rotateRequestProto);
+                ImageClientUtils.writeImage(image, replyProto);
             } finally {
                 // ManagedChannels use resources like threads and TCP connections. To prevent leaking these
                 // resources the channel should be shut down when it will no longer be used. If it may be used
@@ -117,7 +118,7 @@ public class ImageClient {
         } catch (NumberFormatException e) {
             log.error(options.getOption("p").getLongOpt() + " arg provided is not an integer");
         } catch (IOException e) {
-            log.error("Failed to read image file. Reason: " + e);
+            log.error("Failed to read/write image file. Reason: " + e);
         } catch (IllegalArgumentException e) {
             log.error("Invalid argument. Reason: " + e.getMessage());
         }
