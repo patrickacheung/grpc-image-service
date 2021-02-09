@@ -10,10 +10,10 @@ import org.junit.Test;
 public class ImageClientUtilsTest {
     @Test
     public void shouldGenerateGoodRotatedPathForNormalFilePath() {
-        Path goodPath = Paths.get("/mnt", "c", "test", "image.jpg");
-        Path newPath = ImageClientUtils.newOutputName(goodPath, "jpg");
+        Path goodPath = Paths.get("/mnt", "c", "test", "image.jpeg");
+        Path newPath = ImageClientUtils.newOutputName(goodPath);
 
-        String expectedPath = "/mnt/c/test/image_rotated.jpg";
+        String expectedPath = "/mnt/c/test/image_rotated.jpeg";
         String actualPath = newPath.toString();
 
         assertEquals(expectedPath, actualPath);
@@ -22,7 +22,7 @@ public class ImageClientUtilsTest {
     @Test
     public void shouldGenerateGoodRotatedPathEvenWithoutExtension() {
         Path goodPath = Paths.get("/mnt", "c", "test", "image");
-        Path newPath = ImageClientUtils.newOutputName(goodPath, "jpg");
+        Path newPath = ImageClientUtils.newOutputName(goodPath);
 
         String expectedPath = "/mnt/c/test/image_rotated";
         String actualPath = newPath.toString();
@@ -33,7 +33,7 @@ public class ImageClientUtilsTest {
     @Test
     public void shouldGenerateGoodRotatedPathIfEndsWithDot() {
         Path goodPath = Paths.get("/mnt", "c", "test", "image.");
-        Path newPath = ImageClientUtils.newOutputName(goodPath, "jpg");
+        Path newPath = ImageClientUtils.newOutputName(goodPath);
 
         String expectedPath = "/mnt/c/test/image._rotated";
         String actualPath = newPath.toString();
@@ -44,7 +44,7 @@ public class ImageClientUtilsTest {
     @Test
     public void shouldGenerateGoodRotatedPathIfEndsWithMultipleDots() {
         Path goodPath = Paths.get("/mnt", "c", "test", "image.....");
-        Path newPath = ImageClientUtils.newOutputName(goodPath, "jpg");
+        Path newPath = ImageClientUtils.newOutputName(goodPath);
 
         String expectedPath = "/mnt/c/test/image....._rotated";
         String actualPath = newPath.toString();
@@ -55,7 +55,7 @@ public class ImageClientUtilsTest {
     @Test
     public void shouldGenerateGoodRotatedPathIfPathHasMultipleDotsWithinPathWithExtension() {
         Path goodPath = Paths.get("/mnt", "c..", "..test.", "i...mage.jpg");
-        Path newPath = ImageClientUtils.newOutputName(goodPath, "jpg");
+        Path newPath = ImageClientUtils.newOutputName(goodPath);
 
         String expectedPath = "/mnt/c../..test./i...mage_rotated.jpg";
         String actualPath = newPath.toString();
@@ -66,7 +66,7 @@ public class ImageClientUtilsTest {
     @Test
     public void shouldGenerateGoodRotatedPathIfPathHasMultipleDotsWithinPathWithoutExtension() {
         Path goodPath = Paths.get("/mnt", "c..", "..test.", "i.mage");
-        Path newPath = ImageClientUtils.newOutputName(goodPath, "jpg");
+        Path newPath = ImageClientUtils.newOutputName(goodPath);
 
         String expectedPath = "/mnt/c../..test./i.mage_rotated";
         String actualPath = newPath.toString();
