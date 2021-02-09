@@ -1,6 +1,9 @@
 package io.github.patrickacheung.client;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.google.protobuf.ByteString;
 
 import java.awt.color.ColorSpace;
@@ -10,6 +13,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import javax.imageio.ImageIO;
@@ -26,6 +33,9 @@ public class ImageClientUtils {
         90, Rotation.NINETY_DEG, 
         180, Rotation.ONE_EIGHTY_DEG, 
         270, Rotation.TWO_SEVENTY_DEG);
+    
+    private static final String SUFFIX = "_rotated";
+    private static final ImmutableSet<String> supportedFormats = ImmutableSet.copyOf(ImageIO.getReaderFormatNames());
 
     private static int validateCliRotationOptions(String rotation) throws IllegalArgumentException {
         try {
@@ -82,7 +92,30 @@ public class ImageClientUtils {
             }
         }
 
-        return new Image(bufferedImage, format);
+        return new Image(bufferedImage, imageFilePath, format);
+    }
+
+    public static void writeImage(Image originalImage, NLImage imageToWriteProto) throws IOException {
+        try (InputStream is = new ByteArrayInputStream(imageToWriteProto.getData().toByteArray())) {
+            BufferedImage rotatedImage = ImageIO.read(is);
+            File newFile = ImageClientUtils.newOutputName(originalImage.filePath).toFile();
+            ImageIO.write(rotatedImage, originalImage.getFormat(), newFile);
+        }
+    }
+
+    @VisibleForTesting
+    static Path newOutputName(Path originalFilePath) {
+        Path lastSegment = originalFilePath.getFileName();
+        int dotIdx = lastSegment.toString().lastIndexOf(".");
+        String extension = lastSegment.toString().substring(
+            dotIdx == lastSegment.toString().length() -1 ? dotIdx : dotIdx + 1, 
+            lastSegment.toString().length());
+        
+        if (dotIdx < 0 || !supportedFormats.contains(extension.toLowerCase())) {
+            return originalFilePath.resolveSibling(Paths.get(originalFilePath.toString() + SUFFIX));
+        }
+        
+        return originalFilePath.resolveSibling(Paths.get(lastSegment.toString().substring(0, dotIdx) + SUFFIX + "." + extension));
     }
 
     private ImageClientUtils() {
@@ -93,10 +126,14 @@ public class ImageClientUtils {
     static class Image {
         private String format;
         private BufferedImage bufferedImage;
+        private Path filePath;
+        private Path outputPath;
 
-        private Image(BufferedImage bufferedImage, String format) {
+        private Image(BufferedImage bufferedImage, Path originalPath, String format) {
             this.bufferedImage = bufferedImage;
+            this.filePath = originalPath;
             this.format = format;
+            this.outputPath = ImageClientUtils.newOutputName(originalPath);
         }
 
         BufferedImage getBufferedImage() {
@@ -105,6 +142,14 @@ public class ImageClientUtils {
 
         String getFormat() {
             return format;
+        }
+
+        Path getOriginalFilePath() {
+            return filePath;
+        }
+
+        Path getNewOutputPath() {
+            return outputPath;
         }
     }
 }
