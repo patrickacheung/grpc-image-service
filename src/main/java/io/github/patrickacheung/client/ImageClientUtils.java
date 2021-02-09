@@ -100,7 +100,7 @@ public class ImageClientUtils {
     }
 
     @VisibleForTesting
-    protected static Path newOutputName(Path originalFilePath, String format) {
+    static Path newOutputName(Path originalFilePath, String format) {
         Path lastSegment = originalFilePath.getFileName();
         int dotIdx = lastSegment.toString().lastIndexOf(".");
         String extension = lastSegment.toString().substring(
@@ -123,11 +123,13 @@ public class ImageClientUtils {
         private String format;
         private BufferedImage bufferedImage;
         private Path filePath;
+        private Path outputPath;
 
         private Image(BufferedImage bufferedImage, Path originalPath, String format) {
             this.bufferedImage = bufferedImage;
             this.filePath = originalPath;
             this.format = format;
+            this.outputPath = ImageClientUtils.newOutputName(originalPath, format);
         }
 
         BufferedImage getBufferedImage() {
@@ -140,6 +142,10 @@ public class ImageClientUtils {
 
         Path getOriginalFilePath() {
             return filePath;
+        }
+
+        Path getNewOutputPath() {
+            return outputPath;
         }
     }
 }

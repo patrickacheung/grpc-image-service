@@ -46,15 +46,8 @@ public class ImageClient {
         this.blockingStub = NLImageServiceGrpc.newBlockingStub(channel);
     }
 
-    public NLImage rotateImage(NLImageRotateRequest request) {
-        NLImage reply;
-        try {
-            reply = blockingStub.rotateImage(request);
-        } catch (StatusRuntimeException e) {
-            log.error("RPC failed: " + e.getStatus().getCause().getMessage());
-            reply = null;
-        }
-        return reply;
+    public NLImage rotateImage(NLImageRotateRequest request) throws StatusRuntimeException {
+        return blockingStub.rotateImage(request);
     }
 
     public static void main(String[] args) throws InterruptedException {
@@ -102,11 +95,12 @@ public class ImageClient {
             // needing certificates.
             .usePlaintext()
             .build();
-            
+
             try {
                 ImageClient imageClient = new ImageClient(channel); // TODO: make an IMAGECLIENTBUILDER
                 NLImage replyProto = imageClient.rotateImage(rotateRequestProto);
                 ImageClientUtils.writeImage(image, replyProto);
+                log.info("Success! - output: " + image.getNewOutputPath());
             } finally {
                 // ManagedChannels use resources like threads and TCP connections. To prevent leaking these
                 // resources the channel should be shut down when it will no longer be used. If it may be used
@@ -121,6 +115,8 @@ public class ImageClient {
             log.error("Failed to read/write image file. Reason: " + e);
         } catch (IllegalArgumentException e) {
             log.error("Invalid argument. Reason: " + e.getMessage());
+        } catch (StatusRuntimeException e) {
+            log.error("RPC failed: " + e.getStatus().getCause().getMessage());
         }
     }
 }
